@@ -1,6 +1,9 @@
 import board
 from adafruit_pca9685 import PCA9685
 import pigpio
+import adafruit_ads1x15.ads1115 as ADS
+from adafruit_ads1x15.analog_in import AnalogIn
+
 
 class Manage():
 
@@ -8,7 +11,8 @@ class Manage():
         self.i2c = board.I2C()
         self.pca = PCA9685(self.i2c)
         self.pca.frequency = 50
-        self.ESC=10 # change to actual pils connects 
+        self.ESC=10 # change to actual pils connects
+        self.ads = ADS.ADS1115(self.i2c)
         
         self.pi = pigpio.pi()
         if not self.pi.connected:
@@ -32,3 +36,7 @@ class Manage():
         else:
             speeding = self.mapper(speed, 0, 500, 1500, 2500)
         self.pi.set_servo_pulsewidth(self.ESC, speeding)
+
+
+    def get_volt(self)->float:
+        return AnalogIn(self.ads, ADS.P0).voltage
