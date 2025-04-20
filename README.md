@@ -21,3 +21,7 @@
 ## Сказать Глебу:
 - On/off в get /cars
 - ip в get /cars
+- Registration users
+- Delete users and cars
+- Update information by cars and users
+- Connecting?!
