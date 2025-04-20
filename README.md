@@ -16,12 +16,3 @@
 * [ ] Убрать везде заглушки по максимуму
 * [x] Тестить уже с сервером ```частично```
 * [x] Попробовать по умолчанию в юзстэйт поместить сразу фетч чтобы сразу машинки с пользователями отображались
-
-
-## Сказать Глебу:
-- On/off в get /cars
-- ip в get /cars
-- Registration users
-- Delete users and cars
-- Update information by cars and users
-- Connecting?!
