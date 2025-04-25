@@ -1,30 +1,41 @@
 import {Pressable,Dimensions,View,Text, StyleSheet, ActivityIndicator} from 'react-native';
 import { get_store } from '../assets/module_hooks/store'
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useRef } from 'react';
 import { useRouter } from 'expo-router';
+import { SERVER_URL } from '@/assets/module_hooks/names';
 
 const scale = Dimensions.get('screen').fontScale**-1;
 
 
 export default function Load(){
     const router = useRouter()
-    let jwt = get_store('jwt')
-    let [id, setid] = useState(0);
+    const jwt = get_store('jwt')
+    const [id, setid] = useState(0);
+    const funcTim = useRef<ReturnType<typeof setInterval> | null>(null)
+
+    useEffect(() => {
+        funcTim.current = setInterval(() => {
+          setid(prev => prev + 1);
+        }, 5000);
     
+        return () => {
+          if (funcTim.current) clearInterval(funcTim.current);
+        };
+      }, []);
 
     useEffect(()=>{
-        fetch('http://gl.anohin.fvds.ru:3001/user/', {
+        fetch(`${SERVER_URL}/user/`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${jwt}`
             }
         })
         .then(response=>{
-            if (JSON.stringify(response.status)=='200'){
-                clearInterval(func_tim);
+            if (response.status==200){
+                if (funcTim.current) clearInterval(funcTim.current);
                 router.push("/(auth)/(main)/all_cars");                
-            }else if (JSON.stringify(response.status)=='400'){
-                clearInterval(func_tim);
+            }else {
+                if (funcTim.current) clearInterval(funcTim.current);
                 router.push("/all_before/vhod");
             };
         })
@@ -32,10 +43,6 @@ export default function Load(){
             alert(error);
         })
     },[id]);
-
-    const func_tim = setInterval(function(){
-        setid(id+=1);
-    }, 5000)
 
     return (
         <View style={styles.all}>
@@ -50,7 +57,7 @@ export default function Load(){
 
 const styles = StyleSheet.create({
     all:{
-        backgroundColor: '#fffff',
+        backgroundColor: '#ffffff',
         width:'100%',
         height:'100%',
         flex:1,

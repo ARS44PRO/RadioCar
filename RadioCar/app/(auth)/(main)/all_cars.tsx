@@ -9,6 +9,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { get_store, save_store } from '@/assets/module_hooks/store';
 import { Ionicons } from '@expo/vector-icons';
 import { TriangleIcon } from '@/assets/module_hooks/trian';
+import { SERVER_URL } from '@/assets/module_hooks/names';
 
 type poper = {id:string,last_seen:string,name:string,
     description:string,image_url:string
@@ -23,13 +24,13 @@ type props_fetch={
 
 const {width,height} = Dimensions.get('screen')
 const scale = Dimensions.get('screen').fontScale**-1
-const admin_know = get_store('admin');
 
 export default function MainSelect(){
     const [id, setid] = useState<props_fetch>({id_get:0,id_post:0,id_put:0,id_delete:0});
     const [refreshing, setrefresh] = useState(false)
     const [Data, setdata] = useState<poper[]>([])
-    const jwt = get_store('jwt');
+    const [admin_know,setadmin] = useState("false");
+    const [jwt,setjwt] = useState('');
     const [vis2, setvis2] = useState(false);
     const [poster, setposter] = useState<Partial<props_post>>({name:'',description:'',image_url:'',key:''})
     const [modal_add_img,setmodal_add_img] = useState(false);
@@ -49,10 +50,12 @@ export default function MainSelect(){
       };
   
       loadFont();
+      setadmin(get_store('admin'));
+      setjwt(get_store('jwt'));
     }, []);
 
     useEffect(()=>{
-        fetch('http://gl.anohin.fvds.ru:3001/car/', {
+        fetch(`${SERVER_URL}/car/`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${jwt}`
@@ -70,7 +73,7 @@ export default function MainSelect(){
 
     useEffect(()=>{
         if (poster.name!=''&&poster.key!=''){
-            fetch('http://gl.anohin.fvds.ru:3001/car/',{
+            fetch(`${SERVER_URL}/car/`,{
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -99,7 +102,7 @@ export default function MainSelect(){
         if (edit_put.description!=''&&edit_put.id!=''
             &&edit_put.image_url!=''&&edit_put.name!=''
         ){
-            fetch('http://gl.anohin.fvds.ru:3001/car/',{
+            fetch(`${SERVER_URL}/car/`,{
                 method: 'PUT',
                 headers: {
                     'Accept': 'application/json',
@@ -126,7 +129,7 @@ export default function MainSelect(){
     
     useEffect(()=>{
         if (id_del!=''){
-            fetch('http://gl.anohin.fvds.ru:3001/car/',{
+            fetch(`${SERVER_URL}/car/`,{
                 method: 'DELETE',
                 headers: {
                     'Accept': 'application/json',

@@ -55,7 +55,6 @@ export default function TabLayout() {
             },
             }}
         >
-            <View style={styles.line}/>
             <Tabs.Screen
             name="all_cars"
             options={{
@@ -77,7 +76,7 @@ export default function TabLayout() {
             name="all_users"
             options={{
                 title: 'Пользователи',
-                href: tabCount>2?'./(auth)/(main)/all_users':null,
+                href: tabCount>2?'/(auth)/(main)/all_users':null,
                 tabBarLabelStyle:{
                     fontFamily:'roboto',
                     fontSize: 13*scale

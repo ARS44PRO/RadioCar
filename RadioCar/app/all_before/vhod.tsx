@@ -8,6 +8,7 @@ import { save_store } from "@/assets/module_hooks/store";
 import * as Font from "expo-font";
 import Switcher from "@/assets/module_hooks/myswitch";
 import {jwtDecode} from 'jwt-decode';
+import {SERVER_URL} from '@/assets/module_hooks/names';
 
 const scale = Dimensions.get('screen').fontScale**-1
 const {width, height} = Dimensions.get('window')
@@ -36,7 +37,7 @@ export default function Index() {
 
     useEffect(()=>{
     if (login!=''&&password!=''&&sender=='login'){
-        fetch('http://gl.anohin.fvds.ru:3001/user/jwt',{
+        fetch(`${SERVER_URL}/user/jwt`,{
         method: 'POST',
         headers: {
             'Accept': 'application/json',
@@ -66,7 +67,38 @@ export default function Index() {
         }).catch(error=>{
             alert(error);
         })
-    }else if (login!='' && password!='' && sender=='register'){alert('register')}
+    }else if (login!='' && password!='' && sender=='register'){
+        fetch(`${SERVER_URL}/user/`,{
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: login.replace(/\s+/g, ''),
+                password: password.replace(/\s+/g, ''),
+                is_super: false,
+                is_verified: false
+            })
+            }
+            ).then(response=>{
+            if (response.status == 200){
+                return response.json();
+            } else {
+                throw new Error(`Error with server (${response.status})`);
+            }
+            }
+            )
+            .then(mass=>{ 
+                save_store('jwt','');
+                save_store('admin','false');
+                alert('Ждите уведомления когда вас примет админ')
+                chlog('');
+                chpass('');
+            }).catch(error=>{
+                alert(error);
+            })
+    }
     }, [id])
 
     const onpress_button = ()=>{

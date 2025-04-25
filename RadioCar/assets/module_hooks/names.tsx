@@ -1,0 +1,1 @@
+export const SERVER_URL = 'http://gl.anohin.fvds.ru:3001'
