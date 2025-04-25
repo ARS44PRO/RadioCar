@@ -67,7 +67,7 @@ const Switcher = ({voider}:props)=>{
                         })
                     }]}
                 >
-                    <Text style={styles.text}>Зарегистрироваться</Text>
+                    <Text style={styles.text}>Регистрация</Text>
                 </Animated.View>
             </Pressable>
         </View>

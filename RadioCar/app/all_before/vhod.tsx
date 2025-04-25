@@ -36,14 +36,14 @@ export default function Index() {
 
     useEffect(()=>{
     if (login!=''&&password!=''&&sender=='login'){
-        fetch('http://gl.anohin.fvds.ru:3001/user/jwt/',{
+        fetch('http://gl.anohin.fvds.ru:3001/user/jwt',{
         method: 'POST',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            username: login.replace(/\s+/g, ''),
+            email: login.replace(/\s+/g, ''),
             password: password.replace(/\s+/g, '')
         })
         }
