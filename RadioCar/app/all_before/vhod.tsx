@@ -12,7 +12,8 @@ import {SERVER_URL} from '@/assets/module_hooks/names';
 
 const scale = Dimensions.get('screen').fontScale**-1
 const {width, height} = Dimensions.get('window')
-
+type fix = {sub:string,token_type:string,email:string,
+    exp:string,is_super:string,iat:string,header:{typ:string,alg:string}}
 
 export default function Index() {
     const [login, chlog] = useState('');
@@ -60,7 +61,7 @@ export default function Index() {
         )
         .then(mass=>{
             save_store('jwt', mass.access_token);
-            save_store('admin', jwtDecode(mass.access_token).is_super.toString()); 
+            save_store('admin', jwtDecode<fix>(mass.access_token).is_super.toString()); 
             router.push("/(auth)/(main)/all_cars");
             chlog('');
             chpass('');
@@ -77,8 +78,6 @@ export default function Index() {
             body: JSON.stringify({
                 email: login.replace(/\s+/g, ''),
                 password: password.replace(/\s+/g, ''),
-                is_super: false,
-                is_verified: false
             })
             }
             ).then(response=>{
@@ -142,7 +141,7 @@ export default function Index() {
                     textAlign:'center',
                     marginVertical:'auto',
                     fontSize:16*scale
-                }}>Войти</Text>
+                }}>{sender=='login'?'Войти':'Регистрация'}</Text>
             </TouchableOpacity>
         </View>
     </SafeAreaView>

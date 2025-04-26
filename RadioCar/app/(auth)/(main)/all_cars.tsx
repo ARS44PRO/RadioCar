@@ -1,15 +1,15 @@
-import {Text, FlatList, StyleSheet, View, Image, TextInput, Dimensions,
+import {Text, FlatList, StyleSheet, View, TextInput, Dimensions,
     Pressable,Modal,
     TouchableOpacity,Keyboard
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, {useEffect, useState} from 'react';
 import * as Font from 'expo-font';
-import { router, useFocusEffect } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { get_store, save_store } from '@/assets/module_hooks/store';
-import { Ionicons } from '@expo/vector-icons';
 import { TriangleIcon } from '@/assets/module_hooks/trian';
 import { SERVER_URL } from '@/assets/module_hooks/names';
+import {Image} from 'expo-image';
 
 type poper = {id:string,last_seen:string,name:string,
     description:string,image_url:string
@@ -29,8 +29,8 @@ export default function MainSelect(){
     const [id, setid] = useState<props_fetch>({id_get:0,id_post:0,id_put:0,id_delete:0});
     const [refreshing, setrefresh] = useState(false)
     const [Data, setdata] = useState<poper[]>([])
-    const [admin_know,setadmin] = useState("false");
-    const [jwt,setjwt] = useState('');
+    const [admin_know,setadmin] = useState(get_store('admin'));
+    const [jwt,setjwt] = useState(get_store('jwt'));
     const [vis2, setvis2] = useState(false);
     const [poster, setposter] = useState<Partial<props_post>>({name:'',description:'',image_url:'',key:''})
     const [modal_add_img,setmodal_add_img] = useState(false);
@@ -38,7 +38,7 @@ export default function MainSelect(){
     const [id_del, setid_del] = useState('');
     const [edit_put,setedit_put] = useState<Partial<props>>({id:'',name:'',description:'',image_url:''});
 
-    useEffect(() => {
+    useFocusEffect(() => {
       const loadFont = async () => {
         try {
           await Font.loadAsync({
@@ -52,7 +52,7 @@ export default function MainSelect(){
       loadFont();
       setadmin(get_store('admin'));
       setjwt(get_store('jwt'));
-    }, []);
+    });
 
     useEffect(()=>{
         fetch(`${SERVER_URL}/car/`, {
@@ -183,9 +183,12 @@ export default function MainSelect(){
                     justifyContent:'flex-start'
                 }}>
                     <View style={styles.img_position}>
-                        <Image 
+                        <Image
                             style={styles.img_size} 
-                            source={image_url==''?default_img:{uri:image_url}}
+                            source={image_url}
+                            placeholder={default_img}
+                            placeholderContentFit='cover'
+                            transition={500}
                         />
                     </View>
                     <View style={styles.text_position}>
@@ -230,7 +233,6 @@ export default function MainSelect(){
                                                 fontFamily:'roboto',
                                                 fontSize:20*scale,
                                             }]}
-                                            onSubmitEditing={Keyboard.dismiss}
                                             value={edited.name}
                                             onChangeText={v=>edit('name',v)}
                                         />:<Text style={{fontFamily:'roboto',fontSize:20*scale}}>{name}</Text>
@@ -245,9 +247,14 @@ export default function MainSelect(){
                                         <TextInput
                                             style={[styles.input,styles.text_for_module]}
                                             multiline
-                                            onSubmitEditing={Keyboard.dismiss}
+                                            onKeyPress={({ nativeEvent }) => {
+                                                if (nativeEvent.key === 'Enter') {
+                                                  Keyboard.dismiss();
+                                                  return false;
+                                                }
+                                            }}
                                             value={edited.description}
-                                            onChangeText={v=>edit('description',v)}
+                                            onChangeText={v=>edit('description',v.trimEnd())}
                                         />
                                         </View>:
                                         <Text style={styles.text_for_module}>{description}</Text>}
@@ -303,7 +310,6 @@ export default function MainSelect(){
                                     </View>
                             </View>
                         </View>
-                </Modal>
                 <Modal
                     animationType="fade" 
                     transparent={true}
@@ -332,10 +338,15 @@ export default function MainSelect(){
                                     backgroundColor:'#e8def8',
                                     padding:'3%'
                                 }}
-                                onSubmitEditing={Keyboard.dismiss}
                                 multiline
+                                onKeyPress={({ nativeEvent }) => {
+                                    if (nativeEvent.key === 'Enter') {
+                                      Keyboard.dismiss();
+                                      return false;
+                                    }
+                                }}
                                 value={edited.image_url}
-                                onChangeText={v=>edit('image_url',v)}
+                                onChangeText={v=>edit('image_url',v.trimEnd())}
                             />
                             </View>
                             <View>
@@ -361,6 +372,7 @@ export default function MainSelect(){
                             </View>
                             </View>
                         </View>
+                </Modal>
                 </Modal>
             </View>
         );
@@ -416,11 +428,16 @@ export default function MainSelect(){
                                             paddingVertical:'5%',
                                             width:width*0.3
                                         }} 
-                                        onSubmitEditing={Keyboard.dismiss}
+                                        onKeyPress={({ nativeEvent }) => {
+                                            if (nativeEvent.key === 'Enter') {
+                                              Keyboard.dismiss();
+                                              return false;
+                                            }
+                                        }}
                                         placeholder="Имя"
                                         multiline
                                         placeholderTextColor='#000000'
-                                        onChangeText={v=>change_post_information('name',v)}
+                                        onChangeText={v=>change_post_information('name',v.trimEnd())}
                                         value={poster.name}
                                     />
                                 </View>
@@ -447,9 +464,8 @@ export default function MainSelect(){
                                           return false;
                                         }
                                     }}
-                                    returnKeyType='done'
                                     placeholderTextColor='#000000'
-                                    onChangeText={v=>change_post_information('description',v)}
+                                    onChangeText={v=>change_post_information('description',v.trimEnd())}
                                     value={poster.description}
                                 />
                                 <TextInput
@@ -460,11 +476,16 @@ export default function MainSelect(){
                                         paddingVertical:'5%',
                                         width:width*0.7
                                     }}
-                                    onSubmitEditing={Keyboard.dismiss}
+                                    onKeyPress={({ nativeEvent }) => {
+                                        if (nativeEvent.key === 'Enter') {
+                                          Keyboard.dismiss();
+                                          return false;
+                                        }
+                                    }}
                                     placeholder="Пароль"
                                     multiline
                                     placeholderTextColor='#000000'
-                                    onChangeText={v=>change_post_information('key',v)}
+                                    onChangeText={v=>change_post_information('key',v.trimEnd())}
                                     value={poster.key}
                                 />
                             </View>
@@ -528,9 +549,14 @@ export default function MainSelect(){
                                 backgroundColor:'#e8def8',
                                 padding:'3%'
                             }}
-                            onSubmitEditing={Keyboard.dismiss}
+                            onKeyPress={({ nativeEvent }) => {
+                                if (nativeEvent.key === 'Enter') {
+                                  Keyboard.dismiss();
+                                  return false;
+                                }
+                            }}
                             multiline
-                            onChangeText={v=>change_post_information('image_url',v)}
+                            onChangeText={v=>change_post_information('image_url',v.trimEnd())}
                             value={poster.image_url}
                         />
                         </View>
@@ -624,7 +650,7 @@ const styles = StyleSheet.create({
     },
     text_on:{},
     bt_choose:{
-        marginRight:width*0.09,
+        marginRight:width*0.09*scale,
         flexGrow:1,
         justifyContent:'flex-end',
         marginBottom:'10%',
