@@ -4,4 +4,4 @@
 
 -> ```В разработке``` [Check done tasks](./RadioCar/README.md)
 
-Добавил что то
+Добавил что-то
