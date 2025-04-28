@@ -77,9 +77,8 @@ const Switcher = ({voider}:props)=>{
 const styles = StyleSheet.create({
     all:{
         width:'80%',
-        height:'5%',
+        height:'11%',
         marginHorizontal:'auto',
-        marginTop:'15%',
         borderWidth:1,
         borderColor:'#79747e',
         borderRadius:30,

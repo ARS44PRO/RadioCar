@@ -5,7 +5,7 @@ import {Text, FlatList, StyleSheet, View, TextInput, Dimensions,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, {useEffect, useState} from 'react';
 import * as Font from 'expo-font';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect,router } from 'expo-router';
 import { get_store, save_store } from '@/assets/module_hooks/store';
 import { TriangleIcon } from '@/assets/module_hooks/trian';
 import { SERVER_URL } from '@/assets/module_hooks/names';
@@ -254,7 +254,7 @@ export default function MainSelect(){
                                                 }
                                             }}
                                             value={edited.description}
-                                            onChangeText={v=>edit('description',v.trimEnd())}
+                                            onChangeText={v=>edit('description',v.replace(/\n+$/, ''))}
                                         />
                                         </View>:
                                         <Text style={styles.text_for_module}>{description}</Text>}
@@ -346,7 +346,7 @@ export default function MainSelect(){
                                     }
                                 }}
                                 value={edited.image_url}
-                                onChangeText={v=>edit('image_url',v.trimEnd())}
+                                onChangeText={v=>edit('image_url',v.replace(/\n+$/, ''))}
                             />
                             </View>
                             <View>
@@ -437,7 +437,7 @@ export default function MainSelect(){
                                         placeholder="Имя"
                                         multiline
                                         placeholderTextColor='#000000'
-                                        onChangeText={v=>change_post_information('name',v.trimEnd())}
+                                        onChangeText={v=>change_post_information('name',v.replace(/\n+$/, ''))}
                                         value={poster.name}
                                     />
                                 </View>
@@ -465,7 +465,7 @@ export default function MainSelect(){
                                         }
                                     }}
                                     placeholderTextColor='#000000'
-                                    onChangeText={v=>change_post_information('description',v.trimEnd())}
+                                    onChangeText={v=>change_post_information('description',v.replace(/\n+$/, ''))}
                                     value={poster.description}
                                 />
                                 <TextInput
@@ -485,7 +485,7 @@ export default function MainSelect(){
                                     placeholder="Пароль"
                                     multiline
                                     placeholderTextColor='#000000'
-                                    onChangeText={v=>change_post_information('key',v.trimEnd())}
+                                    onChangeText={v=>change_post_information('key',v.replace(/\n+$/, ''))}
                                     value={poster.key}
                                 />
                             </View>
@@ -556,7 +556,7 @@ export default function MainSelect(){
                                 }
                             }}
                             multiline
-                            onChangeText={v=>change_post_information('image_url',v.trimEnd())}
+                            onChangeText={v=>change_post_information('image_url',v.replace(/\n+$/, ''))}
                             value={poster.image_url}
                         />
                         </View>
@@ -643,6 +643,7 @@ const styles = StyleSheet.create({
         fontSize:22*scale
     },
     text_descr:{
+        width:'95%',
         fontFamily:'Roboto',
         color:'#49454f',
         fontSize:14*scale,
@@ -716,9 +717,9 @@ const styles = StyleSheet.create({
     },
 })
 
-const choose_car = (name:string, ip:string)=>{
-    save_store('name_connect', name);
-    save_store('ip_connect', ip); {/*Переписать uselocalsearchparams*/}
-    alert('choose');
-    // router.push('/(auth)/manage_car/connection')
+const choose_car = (name:string,id:string)=>{
+    router.push({
+        pathname:'../manage_car/connection',
+        params: {name:name,id:id}
+    })
 }

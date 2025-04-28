@@ -123,12 +123,12 @@ export default function MainSelect(){
 
     const Cars = ({id, email, is_super, is_verified}: poper)=>{
         const [modalVis, setvis] = useState(false);
+        const name = jwtDecode<poper>(jwt).email.toString()
         const edit = (key:keyof poper,value:string|boolean) =>{
             setedit(prev=>({...prev,[key]:value}));
         };
-        
         return(
-            <SafeAreaView style={styles.whole_box}>
+            <View style={styles.whole_box}>
                 <View style={styles.first_column}>
                     <View>
                         <Text style={styles.text_user}>{email}</Text>
@@ -150,7 +150,7 @@ export default function MainSelect(){
                         }]}>{is_verified==false?'На рассмотрении':'Подтвержден'}</Text>
                     </View>
                 </View>
-                {jwtDecode<poper>(jwt).email.toString()!=email?
+                {name!=email?
                 <View style={styles.second_column}>
                     <Pressable onPress={()=>{setvis(true)}} style={styles.second_column_2}>
                         <View>
@@ -211,7 +211,7 @@ export default function MainSelect(){
                             </View>
                         </View>
                 </Modal>
-            </SafeAreaView>
+            </View>
         );
     }
 
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#ccc',
     },
     second_column_2:{
-        width:width*0.12,
+        width:width*0.11,
         flexDirection:'row',
         justifyContent:'space-around',
     },

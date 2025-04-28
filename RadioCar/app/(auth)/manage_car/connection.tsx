@@ -2,40 +2,56 @@ import {View, Text, Pressable,
     StyleSheet, ActivityIndicator,
     Dimensions
 } from 'react-native';
-import {router} from 'expo-router';
+import {router,useLocalSearchParams} from 'expo-router';
 import { get_store } from '@/assets/module_hooks/store';
+import { useRef,useEffect } from 'react';
 
 const scale = Dimensions.get('screen').fontScale**-1
 
 
-export default function Connect(){
-    const name = get_store('name_connect')
-    const ip = get_store('ip_connect')
+export default function Connect() {
+    const funcTim = useRef<ReturnType<typeof setInterval> | null>(null);
+    const {name,id} = useLocalSearchParams<{name:string,id:string}>();
 
-    const connect_ws = (ip:string)=>{
-        alert('Connection success!');
-        router.push('/manage_car/manage_car')
-    }
+    const connect_ws = (name:string,id: string) => {
+        if (funcTim.current) {
+            clearInterval(funcTim.current);
+            funcTim.current = null;
+        }
+        
+        router.push({
+            pathname:'/manage_car/manage_car',
+            params:{name:name,id:id}
+        });
+    };
+    
+    useEffect(() => {
+        funcTim.current = setInterval(() => {
+            connect_ws(name,id);
+        }, 2000);
 
-    const func_tim = setInterval(function(){
-        connect_ws(ip);
-        clearInterval(func_tim)
-    }, 2000)
-
+        return () => {
+            if (funcTim.current) {
+                clearInterval(funcTim.current);
+                funcTim.current = null;
+            }
+        };
+    }, []);
+    
     return (
         <View style={styles.all}>
             <Text style={{
-                color: '#ffffff',
-                fontSize: 30*scale,
+                color: '#000000',
+                fontSize: 25*scale,
             }}>Connect to {name}</Text>
-            <ActivityIndicator style={{marginTop:'10%'}} size="large" color='#ffffff' />
+            <ActivityIndicator style={{marginTop:'10%'}} size="large" color='#000000' />
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     all:{
-        backgroundColor: '#666565',
+        backgroundColor: '#ffffff',
         width:'100%',
         height:'100%',
         flex:1,
