@@ -9,7 +9,7 @@ const scale = Dimensions.get('screen').fontScale**-1;
 
 export default function Manage() {
   const { name, id } = useLocalSearchParams<{name:string, id: string }>();
-  // Состояние для отслеживания нажатия на кнопки
+
   const [activeButtons, setActiveButtons] = useState({
     left: false,
     right: false,
@@ -17,7 +17,6 @@ export default function Manage() {
     cross: false
   });
   
-  // Состояние для режима настройки
   const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
@@ -37,27 +36,22 @@ export default function Manage() {
     }
   };
 
-  // Обработчики нажатий для элементов управления
-  const handleButtonPress = (button, isPressed) => {
+  const handleButtonPress = (button:string, isPressed:boolean) => {
     setActiveButtons(prev => ({
       ...prev,
       [button]: isPressed
     }));
     
-    // Здесь можно добавить логику отправки команд на машину
     console.log(`Button ${button} ${isPressed ? 'pressed' : 'released'}`);
   };
 
-  // Переключение режима настройки
   const toggleEditMode = () => {
     setEditMode(prev => !prev);
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Шапка с кнопкой назад и настройками */}
       <View style={styles.headerContainer}>
-        {/* Кнопка "Назад" (слева) */}
         <View style={styles.header}>
           <Pressable 
             style={styles.headerButton} 
@@ -68,7 +62,6 @@ export default function Manage() {
           </Pressable>
         </View>
 
-        {/* Кнопка "Настроить" (справа) */}
         <View style={styles.headerRight}>
           <Pressable 
             style={[styles.settingsButton, editMode && styles.settingsButtonActive]} 
@@ -94,9 +87,7 @@ export default function Manage() {
         )}
       </View>
       
-      {/* Элементы управления */}
       <View style={styles.controlsContainer}>
-        {/* Левая группа - стрелки */}
         <View style={styles.arrowsContainer}>
           <Pressable 
             style={[styles.controlButton, activeButtons.left && styles.activeButton]}
@@ -117,7 +108,6 @@ export default function Manage() {
           </Pressable>
         </View>
         
-        {/* Правая группа - круг и крест (вертикально) */}
         <View style={styles.buttonsContainer}>
           <Pressable 
             style={[styles.controlButton, styles.circleButton, activeButtons.circle && styles.activeButton]}
@@ -147,10 +137,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1e1e1e',
   },
-  // Новый контейнер для шапки с кнопками по краям
   headerContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between', // Разместит элементы по краям
+    justifyContent: 'space-between', 
     position: 'absolute',
     top: 10,
     left: 10,
@@ -197,7 +186,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
   },
-  // Стили для элементов управления
   controlsContainer: {
     position: 'absolute',
     bottom: 40,
@@ -231,10 +219,10 @@ const styles = StyleSheet.create({
     height: 20,
   },
   circleButton: {
-    backgroundColor: 'rgba(76, 175, 80, 0.3)', // зеленоватый
+    backgroundColor: 'rgba(76, 175, 80, 0.3)', 
   },
   crossButton: {
-    backgroundColor: 'rgba(244, 67, 54, 0.3)', // красноватый
+    backgroundColor: 'rgba(244, 67, 54, 0.3)', 
   },
   activeButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.4)',
