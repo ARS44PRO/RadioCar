@@ -1,7 +1,9 @@
-import { Dimensions, Text, Pressable, View, StyleSheet } from 'react-native';
+import { Dimensions, Text, Pressable, View, StyleSheet,
+  Animated, PanResponder
+ } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {orient_hor,orient_port} from '@/assets/module_hooks/orient';
 
@@ -17,7 +19,43 @@ export default function Manage() {
     cross: false
   });
   
+  const arrowPosition = useRef(new Animated.ValueXY()).current;
+  const buttonsPosition = useRef(new Animated.ValueXY()).current;
   const [editMode, setEditMode] = useState(false);
+
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => editMode,
+    onMoveShouldSetPanResponder: () => editMode,
+    onPanResponderGrant: () => {
+      arrowPosition.extractOffset();
+    },
+    onPanResponderMove: (evt, gestureState) => {
+      arrowPosition.setValue({
+        x: gestureState.dx,
+        y: gestureState.dy
+      });
+    },
+    onPanResponderRelease: () => {
+      arrowPosition.flattenOffset();
+    },
+  });
+
+  const buttonsPanResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => editMode,
+    onMoveShouldSetPanResponder: () => editMode,
+    onPanResponderGrant: () => {
+      buttonsPosition.extractOffset();
+    },
+    onPanResponderMove: (evt, gestureState) => {
+      buttonsPosition.setValue({
+        x: gestureState.dx,
+        y: gestureState.dy
+      });
+    },
+    onPanResponderRelease: () => {
+      buttonsPosition.flattenOffset();
+    },
+  });
 
   useEffect(() => {
     orient_hor();
@@ -88,11 +126,19 @@ export default function Manage() {
       </View>
       
       <View style={styles.controlsContainer}>
-        <View style={styles.arrowsContainer}>
+        <Animated.View
+          {...panResponder.panHandlers}
+          style={[
+            styles.arrowsContainer,
+            { transform: arrowPosition.getTranslateTransform() },
+            editMode && styles.editModeContainer
+          ]}
+        >
           <Pressable 
             style={[styles.controlButton, activeButtons.left && styles.activeButton]}
-            onPressIn={() => handleButtonPress('left', true)}
-            onPressOut={() => handleButtonPress('left', false)}
+            onPressIn={() => !editMode && handleButtonPress('left', true)}
+            onPressOut={() => !editMode && handleButtonPress('left', false)}
+            disabled={editMode}
           >
             <Ionicons name="chevron-back" size={40} color="white" />
           </Pressable>
@@ -101,18 +147,27 @@ export default function Manage() {
           
           <Pressable 
             style={[styles.controlButton, activeButtons.right && styles.activeButton]}
-            onPressIn={() => handleButtonPress('right', true)}
-            onPressOut={() => handleButtonPress('right', false)}
+            onPressIn={() => !editMode && handleButtonPress('right', true)}
+            onPressOut={() => !editMode && handleButtonPress('right', false)}
+            disabled={editMode}
           >
             <Ionicons name="chevron-forward" size={40} color="white" />
           </Pressable>
-        </View>
+        </Animated.View>
         
-        <View style={styles.buttonsContainer}>
+        <Animated.View
+          {...buttonsPanResponder.panHandlers}
+          style={[
+            styles.buttonsContainer,
+            { transform: buttonsPosition.getTranslateTransform() },
+            editMode && styles.editModeContainer
+          ]}
+        >
           <Pressable 
             style={[styles.controlButton, styles.circleButton, activeButtons.circle && styles.activeButton]}
-            onPressIn={() => handleButtonPress('circle', true)}
-            onPressOut={() => handleButtonPress('circle', false)}
+            onPressIn={() => !editMode && handleButtonPress('circle', true)}
+            onPressOut={() => !editMode && handleButtonPress('circle', false)}
+            disabled={editMode}
           >
             <Ionicons name="ellipse-outline" size={36} color="white" />
           </Pressable>
@@ -121,12 +176,13 @@ export default function Manage() {
           
           <Pressable 
             style={[styles.controlButton, styles.crossButton, activeButtons.cross && styles.activeButton]}
-            onPressIn={() => handleButtonPress('cross', true)}
-            onPressOut={() => handleButtonPress('cross', false)}
+            onPressIn={() => !editMode && handleButtonPress('cross', true)}
+            onPressOut={() => !editMode && handleButtonPress('cross', false)}
+            disabled={editMode}
           >
             <Ionicons name="close" size={40} color="white" />
           </Pressable>
-        </View>
+        </Animated.View>
       </View>
     </SafeAreaView>
   );
@@ -141,9 +197,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between', 
     position: 'absolute',
-    top: 10,
-    left: 10,
-    right: 10,
+    top: '3%',
+    left: '3%',
+    right: '3%',
     zIndex: 10,
   },
   header: {
@@ -188,11 +244,11 @@ const styles = StyleSheet.create({
   },
   controlsContainer: {
     position: 'absolute',
-    bottom: 40,
+    bottom: '10%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    paddingHorizontal: 40,
+    paddingHorizontal: '5%',
   },
   arrowsContainer: {
     flexDirection: 'row',
@@ -227,5 +283,12 @@ const styles = StyleSheet.create({
   activeButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.4)',
     transform: [{ scale: 0.95 }],
-  }
+  },
+  editModeContainer: {
+    borderWidth: 2,
+    borderColor: '#ffcc00',
+    borderRadius: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    padding: 5,
+  },
 });
