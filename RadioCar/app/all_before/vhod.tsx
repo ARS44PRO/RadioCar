@@ -93,7 +93,7 @@ export default function Index() {
             alert(error);
         })
     }else if (login!='' && password!='' && sender=='register'){
-        fetch(`${SERVER_URL}/user/`,{
+        fetch(`${SERVER_URL}/user`,{
             method: 'POST',
             headers: {
                 'Accept': 'application/json',

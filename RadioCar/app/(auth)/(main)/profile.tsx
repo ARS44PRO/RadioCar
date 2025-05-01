@@ -39,7 +39,7 @@ export default function Profile(){
     
     useEffect(()=>{
         if (id_del!=''){
-            fetch(`${SERVER_URL}/user/`,{
+            fetch(`${SERVER_URL}/user`,{
                 method: 'DELETE',
                 headers: {
                     'Accept': 'application/json',

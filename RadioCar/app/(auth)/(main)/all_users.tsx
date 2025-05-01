@@ -44,7 +44,7 @@ export default function MainSelect(){
     });
 
     useEffect(()=>{
-        fetch(`${SERVER_URL}/user/`, {
+        fetch(`${SERVER_URL}/user`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${jwt}`
@@ -63,7 +63,7 @@ export default function MainSelect(){
     useEffect(()=>{
         if (edited.email!=''&&edited.id!=''
         ){
-            fetch(`${SERVER_URL}/user/`,{
+            fetch(`${SERVER_URL}/user`,{
                 method: 'PUT',
                 headers: {
                     'Accept': 'application/json',
@@ -90,7 +90,7 @@ export default function MainSelect(){
     
     useEffect(()=>{
         if (id_del!=''){
-            fetch(`${SERVER_URL}/user/`,{
+            fetch(`${SERVER_URL}/user`,{
                 method: 'DELETE',
                 headers: {
                     'Accept': 'application/json',

@@ -55,7 +55,7 @@ export default function MainSelect(){
     });
 
     useEffect(()=>{
-        fetch(`${SERVER_URL}/car/`, {
+        fetch(`${SERVER_URL}/car`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${jwt}`
@@ -73,7 +73,7 @@ export default function MainSelect(){
 
     useEffect(()=>{
         if (poster.name!=''&&poster.key!=''){
-            fetch(`${SERVER_URL}/car/`,{
+            fetch(`${SERVER_URL}/car`,{
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -102,7 +102,7 @@ export default function MainSelect(){
         if (edit_put.description!=''&&edit_put.id!=''
             &&edit_put.image_url!=''&&edit_put.name!=''
         ){
-            fetch(`${SERVER_URL}/car/`,{
+            fetch(`${SERVER_URL}/car`,{
                 method: 'PUT',
                 headers: {
                     'Accept': 'application/json',
@@ -129,7 +129,7 @@ export default function MainSelect(){
     
     useEffect(()=>{
         if (id_del!=''){
-            fetch(`${SERVER_URL}/car/`,{
+            fetch(`${SERVER_URL}/car`,{
                 method: 'DELETE',
                 headers: {
                     'Accept': 'application/json',
