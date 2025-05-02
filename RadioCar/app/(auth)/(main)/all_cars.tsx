@@ -100,8 +100,8 @@ export default function MainSelect(){
     },[id.id_post]);
     
     useEffect(()=>{
-        if (edit_put.description!=''&&edit_put.id!=''
-            &&edit_put.image_url!=''&&edit_put.name!=''
+        if (edit_put.id!=''
+            &&edit_put.name!=''
         ){
             fetch(`${SERVER_URL}/car`,{
                 method: 'PUT',
@@ -175,14 +175,18 @@ export default function MainSelect(){
             setedit(prev=>({...prev,[key]:value}));
         };
         const [localImageUri, setLocalImageUri] = useState<string | null>(null);
+        const [isImageLoading, setIsImageLoading] = useState(true);
 
         useEffect(() => {
-          if (!image_url) {
+          setIsImageLoading(true);
+          
+          if (!edited.image_url) {
             setLocalImageUri(null);
+            setIsImageLoading(false);
             return;
           }
         
-          const imageName = image_url.split('/').pop() || Date.now().toString();
+          const imageName = edited.image_url.split('/').pop() || Date.now().toString();
           const safeImageName = imageName.replace(/[^a-zA-Z0-9]/g, '_');
           const cachedImagePath = `${FileSystem.cacheDirectory}${safeImageName}`;
         
@@ -190,22 +194,27 @@ export default function MainSelect(){
             .then(info => {
               if (info.exists) {
                 setLocalImageUri(cachedImagePath);
+                setIsImageLoading(false);
               } else {
-                if (image_url && image_url.startsWith('http')) {
-                  FileSystem.downloadAsync(image_url, cachedImagePath)
+                if (edited.image_url && edited.image_url.startsWith('http')) {
+                  FileSystem.downloadAsync(edited.image_url, cachedImagePath)
                     .then(({ uri }) => {
                       setLocalImageUri(uri);
+                      setIsImageLoading(false);
                     })
                     .catch(error => {
                       setLocalImageUri(null);
+                      setIsImageLoading(false);
                     });
                 } else {
                   setLocalImageUri(null);
+                  setIsImageLoading(false);
                 }
               }
             })
             .catch(error => {
               setLocalImageUri(null);
+              setIsImageLoading(false);
             });
           
         }, [edited.image_url]);
@@ -223,21 +232,33 @@ export default function MainSelect(){
                             onPress={()=>setvis(true)}
                             onLongPress={()=>setmodal_img(true)}
                           >
-                            <Image
-                              style={styles.img_size} 
-                              source={localImageUri ? { uri: localImageUri } : default_img}
-                              contentFit="cover"
-                              cachePolicy="memory-disk"
-                            />
+                            {isImageLoading ? (
+                              <View style={[styles.img_size, {backgroundColor: '#e0e0e0', justifyContent: 'center', alignItems: 'center'}]}>
+                                <Text style={{color: '#666'}}>Загрузка...</Text>
+                              </View>
+                            ) : (
+                              <Image
+                                style={styles.img_size} 
+                                source={localImageUri!=null ? { uri: localImageUri } : default_img}
+                                contentFit="cover"
+                                cachePolicy="memory-disk"
+                              />
+                            )}
                           </TouchableOpacity>
                         ) : (
                           <TouchableOpacity onPress={()=>setvis(true)}>
-                            <Image
-                              style={styles.img_size} 
-                              source={localImageUri ? { uri: localImageUri } : default_img}
-                              contentFit="cover"
-                              cachePolicy="memory-disk"
-                            />
+                            {isImageLoading ? (
+                              <View style={[styles.img_size, {backgroundColor: '#e0e0e0', justifyContent: 'center', alignItems: 'center'}]}>
+                                <Text style={{color: '#666'}}>Загрузка...</Text>
+                              </View>
+                            ) : (
+                              <Image
+                                style={styles.img_size} 
+                                source={localImageUri!=null ? { uri: localImageUri } : default_img}
+                                contentFit="cover"
+                                cachePolicy="memory-disk"
+                              />
+                            )}
                           </TouchableOpacity>
                         )}
                     </View>
@@ -268,7 +289,7 @@ export default function MainSelect(){
                                       <TouchableOpacity onPress={()=>setmodal_img(true)}>
                                         <Image
                                           style={styles.img_size} 
-                                          source={localImageUri ? { uri: localImageUri } : default_img}
+                                          source={localImageUri!=null ? { uri: localImageUri } : default_img}
                                           contentFit="cover"
                                           cachePolicy="memory-disk"
                                         />
@@ -276,7 +297,7 @@ export default function MainSelect(){
                                     ) : (
                                       <Image
                                         style={styles.img_size} 
-                                        source={localImageUri ? { uri: localImageUri } : default_img}
+                                        source={localImageUri!=null ? { uri: localImageUri } : default_img}
                                         contentFit="cover"
                                         cachePolicy="memory-disk"
                                       />
@@ -351,7 +372,6 @@ export default function MainSelect(){
                                         <Pressable
                                             style={styles.closeButton}
                                             onPress={() => {
-                                                setLocalImageUri(null);
                                                 setedit_put(edited);
                                                 setid(prev=>({...prev,id_put:prev.id_put+1}));
                                                 setvis(false);
@@ -440,6 +460,8 @@ export default function MainSelect(){
                                         <Image 
                                             style={[styles.img_size,{marginBottom:'5%'}]}
                                             source={poster.image_url==''?default_img:{uri:poster.image_url}}
+                                            placeholder={default_img}
+                                            contentFit='cover'
                                             />
                                     </TouchableOpacity>
                                 </View>
@@ -663,8 +685,8 @@ const styles = StyleSheet.create({
     },
     closeButton: {
         marginTop: '2%',
-        backgroundColor: '#65558f',
-        borderRadius: 25,
+        backgroundColor: 'rgba(115, 85, 143, 0.82)',
+        borderRadius: 20,
         padding:'5%'
     },
     text_for_module:{
@@ -699,7 +721,7 @@ const styles = StyleSheet.create({
         width:width*0.9,
         flexDirection:'row',
         justifyContent:'space-around',
-        marginVertical:'10%',
+        marginVertical:'5%',
     },
     first_row:{
         marginTop:'5%',
@@ -729,8 +751,8 @@ const styles = StyleSheet.create({
     modalButton: {
         width: width * 0.4,
         marginTop: '5%',
-        backgroundColor: '#65558f',
-        borderRadius: 25,
+        backgroundColor: 'rgba(115, 85, 143, 0.82)',
+        borderRadius: 20,
         padding: '3%',
     },
     buttonText: {
