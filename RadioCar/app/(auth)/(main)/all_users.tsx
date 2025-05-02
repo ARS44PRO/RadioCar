@@ -138,8 +138,9 @@ export default function MainSelect(){
                             marginTop:'1%'
                         }
                     }>
+                        {is_verified==true?
                         <Text style={styles.text_other}>{is_super==true?'Супер пользователь':
-                            'Не супер пользователь'}</Text>
+                            'Не супер пользователь'}</Text>:null}
                     </View>
                     <View style={{
                         marginTop:'1%'
