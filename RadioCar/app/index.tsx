@@ -24,7 +24,7 @@ export default function Load(){
       }, []);
 
     useEffect(()=>{
-        fetch(`${SERVER_URL}/user/`, {
+        fetch(`${SERVER_URL}/user`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${jwt}`

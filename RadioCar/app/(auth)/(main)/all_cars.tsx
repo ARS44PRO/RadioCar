@@ -10,6 +10,7 @@ import { get_store, save_store } from '@/assets/module_hooks/store';
 import { TriangleIcon } from '@/assets/module_hooks/trian';
 import { SERVER_URL } from '@/assets/module_hooks/names';
 import {Image} from 'expo-image';
+import * as FileSystem from 'expo-file-system';
 
 type poper = {id:string,last_seen:string,name:string,
     description:string,image_url:string
@@ -173,7 +174,41 @@ export default function MainSelect(){
         const edit = (key:keyof poper,value:string) =>{
             setedit(prev=>({...prev,[key]:value}));
         };
-        let keys = 0
+        const [localImageUri, setLocalImageUri] = useState<string | null>(null);
+
+        useEffect(() => {
+          if (!image_url) {
+            setLocalImageUri(null);
+            return;
+          }
+        
+          const imageName = image_url.split('/').pop() || Date.now().toString();
+          const safeImageName = imageName.replace(/[^a-zA-Z0-9]/g, '_');
+          const cachedImagePath = `${FileSystem.cacheDirectory}${safeImageName}`;
+        
+          FileSystem.getInfoAsync(cachedImagePath)
+            .then(info => {
+              if (info.exists) {
+                setLocalImageUri(cachedImagePath);
+              } else {
+                if (image_url && image_url.startsWith('http')) {
+                  FileSystem.downloadAsync(image_url, cachedImagePath)
+                    .then(({ uri }) => {
+                      setLocalImageUri(uri);
+                    })
+                    .catch(error => {
+                      setLocalImageUri(null);
+                    });
+                } else {
+                  setLocalImageUri(null);
+                }
+              }
+            })
+            .catch(error => {
+              setLocalImageUri(null);
+            });
+          
+        }, [edited.image_url]);
         
         return(
             <View style={styles.whole_box}>
@@ -183,13 +218,28 @@ export default function MainSelect(){
                     justifyContent:'flex-start'
                 }}>
                     <View style={styles.img_position}>
-                        <Image
-                            style={styles.img_size} 
-                            source={image_url}
-                            placeholder={default_img}
-                            placeholderContentFit='cover'
-                            transition={500}
-                        />
+                        {admin_know=='true' ? (
+                          <TouchableOpacity 
+                            onPress={()=>setvis(true)}
+                            onLongPress={()=>setmodal_img(true)}
+                          >
+                            <Image
+                              style={styles.img_size} 
+                              source={localImageUri ? { uri: localImageUri } : default_img}
+                              contentFit="cover"
+                              cachePolicy="memory-disk"
+                            />
+                          </TouchableOpacity>
+                        ) : (
+                          <TouchableOpacity onPress={()=>setvis(true)}>
+                            <Image
+                              style={styles.img_size} 
+                              source={localImageUri ? { uri: localImageUri } : default_img}
+                              contentFit="cover"
+                              cachePolicy="memory-disk"
+                            />
+                          </TouchableOpacity>
+                        )}
                     </View>
                     <View style={styles.text_position}>
                         <Text style={styles.text_name}>{name}</Text>
@@ -214,19 +264,23 @@ export default function MainSelect(){
                             <View style={styles.modalContent}>
                                 <View style={styles.first_row}>
                                 <View style={styles.first_column}>
-                                    {admin_know=='true'?
-                                    <TouchableOpacity onPress={()=>setmodal_img(true)}>
+                                    {admin_know=='true' ? (
+                                      <TouchableOpacity onPress={()=>setmodal_img(true)}>
                                         <Image
-                                            key={keys} 
-                                            style={[styles.img_size,{marginBottom:'5%'}]} 
-                                            source={edited.image_url==''?default_img:{uri:edited.image_url}}
+                                          style={styles.img_size} 
+                                          source={localImageUri ? { uri: localImageUri } : default_img}
+                                          contentFit="cover"
+                                          cachePolicy="memory-disk"
                                         />
-                                    </TouchableOpacity>:
-                                    <Image 
-                                        style={[styles.img_size,{marginBottom:'5%'}]} 
-                                        source={edited.image_url==''?default_img:{uri:edited.image_url}}
-                                    />
-                                    }
+                                      </TouchableOpacity>
+                                    ) : (
+                                      <Image
+                                        style={styles.img_size} 
+                                        source={localImageUri ? { uri: localImageUri } : default_img}
+                                        contentFit="cover"
+                                        cachePolicy="memory-disk"
+                                      />
+                                    )}
                                     <View style={styles.view_name}>
                                         {admin_know=='true'?<TextInput
                                             style={[styles.input,{
@@ -277,6 +331,7 @@ export default function MainSelect(){
                                                 justifyContent:'center'
                                             }}>Закрыть</Text>
                                         </Pressable>
+                                        {admin_know=='true'?
                                         <Pressable
                                             style={styles.closeButton}
                                             onPress={() => {
@@ -291,10 +346,12 @@ export default function MainSelect(){
                                                 textAlign:'center',
                                                 justifyContent:'center'
                                             }}>Удалить</Text>
-                                        </Pressable>
+                                        </Pressable>:null}
+                                        {admin_know=='true'?
                                         <Pressable
                                             style={styles.closeButton}
                                             onPress={() => {
+                                                setLocalImageUri(null);
                                                 setedit_put(edited);
                                                 setid(prev=>({...prev,id_put:prev.id_put+1}));
                                                 setvis(false);
@@ -306,38 +363,21 @@ export default function MainSelect(){
                                                 textAlign:'center',
                                                 justifyContent:'center'
                                             }}>Обновить</Text>
-                                        </Pressable>
+                                        </Pressable>:null}
                                     </View>
                             </View>
                         </View>
+                </Modal>
                 <Modal
                     animationType="fade" 
                     transparent={true}
                     visible={modal_img}
                     onRequestClose={() => setmodal_img(false)}>
-                        <View style={{
-                            flex: 1,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            backgroundColor: 'rgba(0,0,0,0.5)',
-                        }}>
-                            <View style={{
-                                width: '90%',
-                                padding:'5%',
-                                backgroundColor: 'white',
-                                borderRadius: 10,
-                                flexDirection:'column',
-                                alignItems: 'center',
-                            }}>
-                            <View>
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.imageUrlModalContent}>
+                            <Text style={styles.modalTitle}>Изменить URL изображения</Text>
                             <TextInput
-                                style={{
-                                    fontFamily:'Roboto',
-                                    fontSize:15*scale,
-                                    borderRadius:10,
-                                    backgroundColor:'#e8def8',
-                                    padding:'3%'
-                                }}
+                                style={styles.imageUrlInput}
                                 multiline
                                 onKeyPress={({ nativeEvent }) => {
                                     if (nativeEvent.key === 'Enter') {
@@ -348,31 +388,15 @@ export default function MainSelect(){
                                 value={edited.image_url}
                                 onChangeText={v=>edit('image_url',v.replace(/\n+$/, ''))}
                             />
-                            </View>
-                            <View>
                             <Pressable
-                                style={{
-                                    width:width*0.4,
-                                    marginTop: '5%',
-                                    backgroundColor: '#65558f',
-                                    borderRadius: 25,
-                                    padding:'3%'
-                                }}
+                                style={styles.modalButton}
                                 onPress={() => {
                                     setmodal_img(false);
                                 }}>
-                                <Text style={{
-                                    color:'#ffffff',
-                                    fontFamily:'roboto',
-                                    fontSize:17*scale,
-                                    textAlign:'center',
-                                    justifyContent:'center',
-                                }}>Готов</Text>
+                                <Text style={styles.buttonText}>Готово</Text>
                             </Pressable>
-                            </View>
-                            </View>
                         </View>
-                </Modal>
+                    </View>
                 </Modal>
             </View>
         );
@@ -526,61 +550,28 @@ export default function MainSelect(){
                 transparent={true}
                 visible={modal_add_img}
                 onRequestClose={() => setmodal_add_img(false)}>
-                    <View style={{
-                        flex: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: 'rgba(0,0,0,0.5)',
-                    }}>
-                        <View style={{
-                            width: '90%',
-                            padding:'5%',
-                            backgroundColor: 'white',
-                            borderRadius: 10,
-                            flexDirection:'column',
-                            alignItems: 'center',
-                        }}>
-                        <View>
-                        <TextInput
-                            style={{
-                                fontFamily:'Roboto',
-                                fontSize:15*scale,
-                                borderRadius:10,
-                                backgroundColor:'#e8def8',
-                                padding:'3%'
-                            }}
-                            onKeyPress={({ nativeEvent }) => {
-                                if (nativeEvent.key === 'Enter') {
-                                  Keyboard.dismiss();
-                                  return false;
-                                }
-                            }}
-                            multiline
-                            onChangeText={v=>change_post_information('image_url',v.replace(/\n+$/, ''))}
-                            value={poster.image_url}
-                        />
-                        </View>
-                        <View>
-                        <Pressable
-                            style={{
-                                width:width*0.4,
-                                marginTop: '5%',
-                                backgroundColor: '#65558f',
-                                borderRadius: 25,
-                                padding:'3%'
-                            }}
-                            onPress={() => {
-                                setmodal_add_img(false);
-                            }}>
-                            <Text style={{
-                                color:'#ffffff',
-                                fontFamily:'roboto',
-                                fontSize:17*scale,
-                                textAlign:'center',
-                                justifyContent:'center',
-                            }}>Готов</Text>
-                        </Pressable>
-                        </View>
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.imageUrlModalContent}>
+                            <Text style={styles.modalTitle}>Введите URL изображения</Text>
+                            <TextInput
+                                style={styles.imageUrlInput}
+                                multiline
+                                onKeyPress={({ nativeEvent }) => {
+                                    if (nativeEvent.key === 'Enter') {
+                                      Keyboard.dismiss();
+                                      return false;
+                                    }
+                                }}
+                                onChangeText={v=>change_post_information('image_url',v.replace(/\n+$/, ''))}
+                                value={poster.image_url}
+                            />
+                            <Pressable
+                                style={styles.modalButton}
+                                onPress={() => {
+                                    setmodal_add_img(false);
+                                }}>
+                                <Text style={styles.buttonText}>Готово</Text>
+                            </Pressable>
                         </View>
                     </View>
                 </Modal>
@@ -694,7 +685,7 @@ const styles = StyleSheet.create({
     second_column:{
         width:'70%',
         flexDirection:'column',
-        alignItems:'center',
+        alignItems:'flex-start',
         justifyContent:'flex-start'
     },
     view_name:{
@@ -714,6 +705,40 @@ const styles = StyleSheet.create({
         marginTop:'5%',
         flexDirection: 'row',
         justifyContent:'space-around',
+    },
+    imageUrlModalContent: {
+        width: '90%',
+        padding: '5%',
+        backgroundColor: 'white',
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    modalTitle: {
+        fontFamily: 'Roboto',
+        fontSize: 15 * scale,
+        marginBottom: '5%',
+    },
+    imageUrlInput: {
+        fontFamily: 'Roboto',
+        fontSize: 15 * scale,
+        borderRadius: 10,
+        backgroundColor: '#e8def8',
+        padding: '3%',
+        width: '100%',
+    },
+    modalButton: {
+        width: width * 0.4,
+        marginTop: '5%',
+        backgroundColor: '#65558f',
+        borderRadius: 25,
+        padding: '3%',
+    },
+    buttonText: {
+        color: '#ffffff',
+        fontFamily: 'roboto',
+        fontSize: 17 * scale,
+        textAlign: 'center',
+        justifyContent: 'center',
     },
 })
 
