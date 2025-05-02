@@ -1,12 +1,26 @@
 import * as ScreenOrientation from 'expo-screen-orientation';
+import { Platform } from 'react-native';
 
 export const orient_port = async () => {
-  try {
-    await ScreenOrientation.lockAsync(
-      ScreenOrientation.OrientationLock.PORTRAIT
-    );
+  try {    
+    if (Platform.OS === 'ios') {
+      try {
+        await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+      } catch (error) {
+        await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.DEFAULT);
+        alert('Сбой, ориентациия вернулась к адаптивной');
+      }
+    } else {
+      try {
+        await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT);
+      } catch(e) {
+        alert('Сбой, ориентациия вернулась к адаптивной');
+        await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.DEFAULT);
+      }
+    }
   } catch (error) {
-    console.error('Ошибка при возврате к вертикальной ориентации:', error);
+    alert('Сбой, ориентациия вернулась к адаптивной');
+    await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.DEFAULT);
   }
 };
 

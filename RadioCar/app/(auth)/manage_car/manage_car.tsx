@@ -8,11 +8,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {orient_hor,orient_port} from '@/assets/module_hooks/orient';
 
 const scale = Dimensions.get('screen').fontScale**-1;
+type props_bt = {left:boolean,
+  right:boolean,circle:boolean,cross:boolean
+}
 
 export default function Manage() {
   const { name, id } = useLocalSearchParams<{name:string, id: string }>();
 
-  const [activeButtons, setActiveButtons] = useState({
+  const [activeButtons, setActiveButtons] = useState<props_bt>({
     left: false,
     right: false,
     circle: false,
@@ -74,13 +77,28 @@ export default function Manage() {
     }
   };
 
-  const handleButtonPress = (button:string, isPressed:boolean) => {
-    setActiveButtons(prev => ({
-      ...prev,
-      [button]: isPressed
-    }));
-    
-    console.log(`Button ${button} ${isPressed ? 'pressed' : 'released'}`);
+  const handleButtonPress = (button: string, isPressed: boolean) => {
+    setActiveButtons(prev => {
+      const newState = {
+        ...prev,
+        [button]: isPressed
+      };
+      
+      sendCommand(newState);
+      
+      return newState;
+    });
+  };
+
+  const sendCommand = (currentState:props_bt) => {
+    console.log('Все кнопки:', currentState);
+
+    // Пример отправки через WebSocket (нужно будет реализовать)
+    // websocket.send(JSON.stringify({ 
+    //   command: button, 
+    //   state: isPressed,
+    //   allButtons: currentState
+    // }));
   };
 
   const toggleEditMode = () => {
@@ -88,7 +106,7 @@ export default function Manage() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.headerContainer}>
         <View style={styles.header}>
           <Pressable 
@@ -125,7 +143,7 @@ export default function Manage() {
         )}
       </View>
       
-      <View style={styles.controlsContainer}>
+      <View style={styles.controlsContainer} pointerEvents="box-none">
         <Animated.View
           {...panResponder.panHandlers}
           style={[
@@ -133,11 +151,13 @@ export default function Manage() {
             { transform: arrowPosition.getTranslateTransform() },
             editMode && styles.editModeContainer
           ]}
+          pointerEvents={editMode ? "auto" : "box-none"}
         >
           <Pressable 
             style={[styles.controlButton, activeButtons.left && styles.activeButton]}
-            onPressIn={() => !editMode && handleButtonPress('left', true)}
-            onPressOut={() => !editMode && handleButtonPress('left', false)}
+            onTouchStart={() => !editMode && handleButtonPress('left', true)}
+            onTouchEnd={() => !editMode && handleButtonPress('left', false)}
+            onTouchCancel={() => !editMode && handleButtonPress('left', false)}
             disabled={editMode}
           >
             <Ionicons name="chevron-back" size={40} color="white" />
@@ -147,8 +167,9 @@ export default function Manage() {
           
           <Pressable 
             style={[styles.controlButton, activeButtons.right && styles.activeButton]}
-            onPressIn={() => !editMode && handleButtonPress('right', true)}
-            onPressOut={() => !editMode && handleButtonPress('right', false)}
+            onTouchStart={() => !editMode && handleButtonPress('right', true)}
+            onTouchEnd={() => !editMode && handleButtonPress('right', false)}
+            onTouchCancel={() => !editMode && handleButtonPress('right', false)}
             disabled={editMode}
           >
             <Ionicons name="chevron-forward" size={40} color="white" />
@@ -162,11 +183,13 @@ export default function Manage() {
             { transform: buttonsPosition.getTranslateTransform() },
             editMode && styles.editModeContainer
           ]}
+          pointerEvents={editMode ? "auto" : "box-none"}
         >
           <Pressable 
             style={[styles.controlButton, styles.circleButton, activeButtons.circle && styles.activeButton]}
-            onPressIn={() => !editMode && handleButtonPress('circle', true)}
-            onPressOut={() => !editMode && handleButtonPress('circle', false)}
+            onTouchStart={() => !editMode && handleButtonPress('circle', true)}
+            onTouchEnd={() => !editMode && handleButtonPress('circle', false)}
+            onTouchCancel={() => !editMode && handleButtonPress('circle', false)}
             disabled={editMode}
           >
             <Ionicons name="ellipse-outline" size={36} color="white" />
@@ -176,15 +199,16 @@ export default function Manage() {
           
           <Pressable 
             style={[styles.controlButton, styles.crossButton, activeButtons.cross && styles.activeButton]}
-            onPressIn={() => !editMode && handleButtonPress('cross', true)}
-            onPressOut={() => !editMode && handleButtonPress('cross', false)}
+            onTouchStart={() => !editMode && handleButtonPress('cross', true)}
+            onTouchEnd={() => !editMode && handleButtonPress('cross', false)}
+            onTouchCancel={() => !editMode && handleButtonPress('cross', false)}
             disabled={editMode}
           >
             <Ionicons name="close" size={40} color="white" />
           </Pressable>
         </Animated.View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -240,7 +264,7 @@ const styles = StyleSheet.create({
   editModeText: {
     color: '#ffcc00',
     marginTop: 10,
-    fontSize: 16,
+    fontSize: 16*scale,
   },
   controlsContainer: {
     position: 'absolute',
