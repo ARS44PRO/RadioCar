@@ -265,10 +265,10 @@ export default function MainSelect(){
                     <View style={styles.text_position}>
                         <Text style={styles.text_name}>{name}</Text>
                         <Text numberOfLines={3} style={styles.text_descr}>{description}</Text>
-                        {on=='true'||name=='Pavel'?<Text style={[styles.text_on,{color:'#4f378a'}]}>Включена</Text>:<Text style={[styles.text_on,{color:'#b3261e'}]}>Выключена</Text>}
+                        {on=='true'||name=='Pavel'||'benz'?<Text style={[styles.text_on,{color:'#4f378a'}]}>Включена</Text>:<Text style={[styles.text_on,{color:'#b3261e'}]}>Выключена</Text>}
                     </View>
                 </Pressable>
-                {on=='true'||name=='Pavel'?
+                {on=='true'||name=='Pavel'||'benz'?
                 <Pressable onPress={()=>choose_car(name,id)}> 
                     <View style={styles.bt_choose}>
                         <TriangleIcon/>

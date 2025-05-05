@@ -14,8 +14,12 @@
       "supportedInterfaceOrientations": [
         "portrait",
         "landscapeLeft",
+        "landscapeRight",
+        "portrait",
+        "landscapeLeft",
         "landscapeRight"
-      ]
+      ],
+      "bundleIdentifier": "com.ars44pro.RadioCar"
     },
     "android": {
       "adaptiveIcon": {
@@ -40,7 +44,8 @@
           "backgroundColor": "#ffffff",
           "initialOrientation": "portrait"
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
