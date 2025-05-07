@@ -766,7 +766,7 @@ const styles = StyleSheet.create({
 
 const choose_car = (name:string,id:string)=>{
     router.push({
-        pathname:'../manage_car/connection',
+        pathname:'../manage_car/manage_car',
         params: {name:name,id:id}
     })
 }

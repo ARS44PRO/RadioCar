@@ -1,5 +1,5 @@
 import { Dimensions, Text, Pressable, View, StyleSheet,
-  Animated, PanResponder
+  Animated, PanResponder, ActivityIndicator
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -459,6 +459,13 @@ export default function Manage() {
 
   return (
     <View style={styles.container}>
+      <View style={[styles.all, {zIndex:remoteStream==null?20:0}]}>
+          <Text style={{
+              color: '#000000',
+              fontSize: 25*scale,
+          }}>Connect to {name}</Text>
+          <ActivityIndicator style={{marginTop:'10%'}} size="large" color='#000000' />
+      </View>
       <View style={styles.headerContainer}>
         <View style={styles.header}>
           <Pressable 
@@ -471,6 +478,13 @@ export default function Manage() {
         </View>
 
         <View style={styles.headerRight}>
+          <Text 
+            style={styles.carNameText}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            Машина: {name}
+          </Text>
           <Pressable 
             style={[styles.settingsButton, editMode && styles.settingsButtonActive]} 
             onPress={toggleEditMode}
@@ -593,7 +607,8 @@ const styles = StyleSheet.create({
     // Для кнопки "Назад" слева
   },
   headerRight: {
-    // Для кнопки "Настроить" справа
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   headerButton: {
     flexDirection: 'row',
@@ -615,6 +630,17 @@ const styles = StyleSheet.create({
   headerButtonText: {
     color: 'white',
     marginLeft: 5,
+  },
+  carNameText: {
+    color: 'white',
+    fontSize: 16*scale,
+    marginRight: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    overflow: 'hidden',
+    maxWidth: 150, // Ограничиваем ширину, чтобы не занимало слишком много места
   },
   content: {
     flex: 1,
@@ -650,11 +676,11 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: 'rgba(255, 255, 255, 0.7)',
   },
   buttonSpacer: {
     width: 20,
@@ -663,13 +689,13 @@ const styles = StyleSheet.create({
     height: 20,
   },
   circleButton: {
-    backgroundColor: 'rgba(76, 175, 80, 0.3)', 
+    backgroundColor: 'rgba(76, 175, 80, 0.7)', 
   },
   crossButton: {
-    backgroundColor: 'rgba(244, 67, 54, 0.3)', 
+    backgroundColor: 'rgba(244, 67, 54, 0.7)', 
   },
   activeButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
     transform: [{ scale: 0.95 }],
   },
   editModeContainer: {
@@ -685,9 +711,22 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 1,
+    zIndex: 2,
   },
   remoteVideo: {
     flex: 1,
   },
+  all:{
+    backgroundColor: '#ffffff',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width:'100%',
+    height:'100%',
+    flex:1,
+    justifyContent:'center',
+    alignItems:'center'
+},
 });
