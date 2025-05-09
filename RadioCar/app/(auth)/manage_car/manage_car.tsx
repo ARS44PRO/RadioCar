@@ -14,6 +14,7 @@ import {
 } from 'react-native-webrtc';
 import { get_store } from '@/assets/module_hooks/store';
 import { jwtDecode } from 'jwt-decode';
+import Slider from '@react-native-community/slider';
 
 const scale = Dimensions.get('screen').fontScale**-1;
 type props_bt = {
@@ -76,6 +77,7 @@ export default function Manage() {
   const arrowPosition = useRef(new Animated.ValueXY()).current;
   const buttonsPosition = useRef(new Animated.ValueXY()).current;
   const [editMode, setEditMode] = useState(false);
+  const [speed, setSpeed] = useState<number>(128); // Начальное значение 128 (середина диапазона)
 
   // Обработчики WebRTC
   const errorHandler = useCallback((error: any) => {
@@ -442,13 +444,14 @@ export default function Manage() {
   };
 
   const sendCommand = (currentState: props_bt) => {
-    console.log('Все кнопки:', currentState);
+    console.log('Все кнопки:', currentState, 'Скорость:', speed);
 
     // Отправка команд через DataChannel
     if (dataChannelRef.current && dataChannelRef.current.readyState === 'open') {
       dataChannelRef.current.send(JSON.stringify({
         command: 'control',
-        buttons: currentState
+        buttons: currentState,
+        speed: speed // Добавляем значение скорости
       }));
     }
   };
@@ -483,7 +486,7 @@ export default function Manage() {
             numberOfLines={1}
             ellipsizeMode="tail"
           >
-            Машина: {name}
+            {name}
           </Text>
           <Pressable 
             style={[styles.settingsButton, editMode && styles.settingsButtonActive]} 
@@ -519,6 +522,26 @@ export default function Manage() {
           </Text>
         )}
       </View>
+
+      {/* Добавляем слайдер скорости в режиме настройки */}
+      {editMode && (
+        <View style={styles.speedContainer}>
+          <Text style={styles.speedText}>
+            Скорость: {speed}
+          </Text>
+          <Slider
+            style={styles.speedSlider}
+            minimumValue={0}
+            maximumValue={255}
+            step={1}
+            value={speed}
+            onValueChange={setSpeed}
+            minimumTrackTintColor="#4CAF50"
+            maximumTrackTintColor="#000000"
+            thumbTintColor="#ffffff"
+          />
+        </View>
+      )}
       
       <View style={styles.controlsContainer} pointerEvents="box-none">
         <Animated.View
@@ -640,7 +663,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 8,
     overflow: 'hidden',
-    maxWidth: 150, // Ограничиваем ширину, чтобы не занимало слишком много места
+    maxWidth: 150,
   },
   content: {
     flex: 1,
@@ -676,11 +699,11 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   buttonSpacer: {
     width: 20,
@@ -695,7 +718,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(244, 67, 54, 0.7)', 
   },
   activeButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     transform: [{ scale: 0.95 }],
   },
   editModeContainer: {
@@ -728,5 +751,25 @@ const styles = StyleSheet.create({
     flex:1,
     justifyContent:'center',
     alignItems:'center'
-},
+  },
+  speedContainer: {
+    position: 'absolute',
+    top: '20%',
+    left: '10%',
+    right: '10%',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: 10,
+    padding: 15,
+    alignItems: 'center',
+    zIndex: 15,
+  },
+  speedText: {
+    color: 'white',
+    fontSize: 18*scale,
+    marginBottom: 10,
+  },
+  speedSlider: {
+    width: '100%',
+    height: 40,
+  },
 });
