@@ -13,10 +13,10 @@ import {Image} from 'expo-image';
 import * as FileSystem from 'expo-file-system';
 
 type poper = {id:string,last_seen:string,name:string,
-    description:string,image_url:string
+    description:string,image_url:string,is_on:boolean
 }
 type props={name:string, id:string, last:string, image_url:string, 
-    description:string, on:string
+    description:string, is_on:boolean
 }
 type props_post = {name:string,description:string,image_url:string,key:string}
 type props_fetch={
@@ -165,7 +165,7 @@ export default function MainSelect(){
         setposter(prev=>({...prev,[key]:value}));
     };
 
-    const Cars = ({name, id, last, image_url, description, on}: props)=>{
+    const Cars = ({name, id, last, image_url, description, is_on}: props)=>{
         const [modalVis, setvis] = useState(false);
         const [edited, setedit] = useState<Partial<props>>({id,name,image_url,description});
         const nach = {name,last,image_url,description}
@@ -265,10 +265,10 @@ export default function MainSelect(){
                     <View style={styles.text_position}>
                         <Text style={styles.text_name}>{name}</Text>
                         <Text numberOfLines={3} style={styles.text_descr}>{description}</Text>
-                        {on=='true'?<Text style={[styles.text_on,{color:'#4f378a'}]}>Включена</Text>:<Text style={[styles.text_on,{color:'#b3261e'}]}>Выключена</Text>}
+                        {is_on==true?<Text style={[styles.text_on,{color:'#4f378a'}]}>Включена</Text>:<Text style={[styles.text_on,{color:'#b3261e'}]}>Выключена</Text>}
                     </View>
                 </Pressable>
-                {on=='true'?
+                {is_on==true?
                 <Pressable onPress={()=>choose_car(name,id)}> 
                     <View style={styles.bt_choose}>
                         <TriangleIcon/>
@@ -435,7 +435,7 @@ export default function MainSelect(){
                 <FlatList
                     data={Data}
                     renderItem={({item}) => <Cars name={item.name} id={item.id} last={item.last_seen} 
-                    image_url={item.image_url} description={item.description} on={item.name} />}
+                    image_url={item.image_url} description={item.description} is_on={item.is_on} />}
                     keyExtractor={item=>item.id}
                     onRefresh={handle}
                     refreshing={refreshing}

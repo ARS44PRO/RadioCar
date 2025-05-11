@@ -56,7 +56,7 @@ export default function Manage() {
 
   // Состояния и рефы для WebRTC
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
-  const [recData, setRecData] = useState('');
+  const [recData, setRecData] = useState<{ads:number|string}>({ads:''});
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const serverConnectionRef = useRef<WebSocket | null>(null);
   const dataChannelRef = useRef<RTCDataChannelWithEvents | null>(null);
@@ -115,6 +115,7 @@ export default function Manage() {
 
       if (signal.type === 'error') {
         console.error(signal.msg);
+        handleGoBack();
         return;
       }
 
@@ -192,7 +193,7 @@ export default function Manage() {
       dataChannel.onmessage = function(event) {
         try {
           const data = JSON.parse(event.data);
-          setRecData(prev => prev + event.data + '\n');
+          setRecData(data);
           console.log("Получен JSON от стримера:", data);
         } catch (e) {
           console.warn("Получен не-JSON:", event.data);
@@ -481,13 +482,18 @@ export default function Manage() {
         </View>
 
         <View style={styles.headerRight}>
-          <Text 
-            style={styles.carNameText}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {name}
-          </Text>
+          <View style={{flexDirection:'column',justifyContent:'center'}}>
+            <Text 
+              style={styles.carNameText}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {name}
+            </Text>
+            <Text style={[styles.carNameText,{textAlign:'center'}]} numberOfLines={1} ellipsizeMode='tail'>
+              {recData.ads}V
+            </Text>
+          </View>
           <Pressable 
             style={[styles.settingsButton, editMode && styles.settingsButtonActive]} 
             onPress={toggleEditMode}
