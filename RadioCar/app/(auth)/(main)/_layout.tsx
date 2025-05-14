@@ -61,7 +61,8 @@ export default function TabLayout() {
                 title: 'Машины',
                 tabBarLabelStyle:{
                     fontFamily:'roboto',
-                    fontSize: 13*scale
+                    fontSize: 13*scale,
+                    flexShrink: 1
                 },
                 tabBarIcon: ({ color }) => (
                 <Ionicons name="car-outline" size={23} color={color} />

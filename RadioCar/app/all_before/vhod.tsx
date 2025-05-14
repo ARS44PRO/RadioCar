@@ -199,7 +199,8 @@ export default function Index() {
                   fontFamily:'roboto', 
                   color:'#ffffff',
                   textAlign:'center', 
-                  fontSize:16*scale
+                  fontSize:16*scale,
+                  flexShrink: 1
                 }}>{sender=='login'?'Войти':'Регистрация'}</Text>
               </TouchableOpacity>
             </View>

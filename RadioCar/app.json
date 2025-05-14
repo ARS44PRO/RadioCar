@@ -17,9 +17,18 @@
         "landscapeRight",
         "portrait",
         "landscapeLeft",
+        "landscapeRight",
+        "portrait",
+        "landscapeLeft",
+        "landscapeRight",
+        "portrait",
+        "landscapeLeft",
         "landscapeRight"
       ],
-      "bundleIdentifier": "com.ars44pro.RadioCar"
+      "bundleIdentifier": "com.ars44pro.RadioCar",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
