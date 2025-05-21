@@ -49,7 +49,7 @@ const Switcher = ({voider}:props)=>{
                         {
                             paddingLeft:'7%'
                         }
-                    ]}>Войти</Text>
+                    ]}>Войти </Text>
                 </Animated.View>
             </Pressable>
             <View style={styles.line}/>
@@ -67,7 +67,7 @@ const Switcher = ({voider}:props)=>{
                         })
                     }]}
                 >
-                    <Text style={styles.text}>Регистрация</Text>
+                    <Text style={styles.text}>Регистрация </Text>
                 </Animated.View>
             </Pressable>
         </View>

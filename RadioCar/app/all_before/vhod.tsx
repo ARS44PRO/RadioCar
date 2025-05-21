@@ -195,13 +195,7 @@ export default function Index() {
                 activeOpacity={0.2} 
                 onPress={onpress_button}
               >
-                <Text style={{
-                  fontFamily:'roboto', 
-                  color:'#ffffff',
-                  textAlign:'center', 
-                  fontSize:16*scale,
-                  flexShrink: 1
-                }}>{sender=='login'?'Войти':'Регистрация'}</Text>
+                <Text style={styles.buttonText}>{sender=='login'?'Войти ':'Регистрация'}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -253,6 +247,7 @@ const styles = StyleSheet.create({
         height: height*0.06,
         marginTop: height*0.01,
         borderRadius: 10,
+        color:'#000000',
         paddingLeft: width*0.05,
     },
     bt:{
@@ -274,16 +269,25 @@ const styles = StyleSheet.create({
         backgroundColor: '#e8def8',
         borderRadius: 10,
         position: 'relative',
+        color:'#000000'
     },
     passwordInput: {
         flex: 1,
         height: '100%',
         paddingLeft: width * 0.05,
+        color:'#000000'
     },
     eyeButton: {
         position: 'absolute',
         right: '7%',
         height: '100%',
         justifyContent: 'center',
+    },
+    buttonText: {
+        fontFamily:'roboto', 
+        color:'#ffffff',
+        textAlign:'center', 
+        fontSize:16*scale,
+        flexShrink: 0
     }
 })

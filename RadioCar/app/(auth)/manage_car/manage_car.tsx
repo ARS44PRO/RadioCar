@@ -14,7 +14,7 @@ import {
 } from 'react-native-webrtc';
 import { get_store } from '@/assets/module_hooks/store';
 import { jwtDecode } from 'jwt-decode';
-import Slider from '@react-native-community/slider';
+import { WS_PATH } from '@/assets/module_hooks/names';
 
 const scale = Dimensions.get('screen').fontScale**-1;
 type props_bt = {
@@ -52,7 +52,10 @@ const peerConnectionConfig = {
 };
 
 export default function Manage() {
-  const { name, id } = useLocalSearchParams<{name:string, id: string }>();
+  const params = useLocalSearchParams();
+  const name = params.name as string;
+  const id = params.id as string;
+  const speed = params.speed ? Number(params.speed) : 0;
 
   // Состояния и рефы для WebRTC
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
@@ -77,7 +80,6 @@ export default function Manage() {
   const arrowPosition = useRef(new Animated.ValueXY()).current;
   const buttonsPosition = useRef(new Animated.ValueXY()).current;
   const [editMode, setEditMode] = useState(false);
-  const [speed, setSpeed] = useState<number>(128); // Начальное значение 128 (середина диапазона)
 
   // Обработчики WebRTC
   const errorHandler = useCallback((error: any) => {
@@ -389,7 +391,7 @@ export default function Manage() {
     orient_hor();
 
     // Создаем WebSocket соединение
-    const wsConnection = new WebSocket(`ws://gl.anohin.fvds.ru:8080/ws`);
+    const wsConnection = new WebSocket(WS_PATH);
     serverConnectionRef.current = wsConnection;
     
     // Настраиваем обработчики WebSocket
@@ -402,6 +404,7 @@ export default function Manage() {
     
     wsConnection.onerror = (error) => {
       console.error('WebSocket ошибка:', error);
+      handleGoBack();
     };
     
     wsConnection.onclose = () => {
@@ -528,26 +531,6 @@ export default function Manage() {
           </Text>
         )}
       </View>
-
-      {/* Добавляем слайдер скорости в режиме настройки */}
-      {editMode && (
-        <View style={styles.speedContainer}>
-          <Text style={styles.speedText}>
-            Скорость: {speed}
-          </Text>
-          <Slider
-            style={styles.speedSlider}
-            minimumValue={0}
-            maximumValue={255}
-            step={1}
-            value={speed}
-            onValueChange={setSpeed}
-            minimumTrackTintColor="#4CAF50"
-            maximumTrackTintColor="#000000"
-            thumbTintColor="#ffffff"
-          />
-        </View>
-      )}
       
       <View style={styles.controlsContainer} pointerEvents="box-none">
         <Animated.View

@@ -23,26 +23,27 @@ export default function Load(){
         };
       }, []);
 
-    useEffect(()=>{
+    useEffect(() => {
         fetch(`${SERVER_URL}/user`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${jwt}`
-            }
-        })
-        .then(response=>{
-            if (response.status==200){
-                if (funcTim.current) clearInterval(funcTim.current);
-                router.push("/(auth)/(main)/all_cars");                
-            }else {
-                if (funcTim.current) clearInterval(funcTim.current);
-                router.push("/all_before/vhod");
-            };
-        })
-        .catch((error)=>{
-            alert(error);
-        })
-    },[id]);
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${jwt || ''}`
+                }
+            })
+            .then(response => {
+                console.log("Получен ответ сервера:", response.status);
+                if (response.status === 200) {
+                    if (funcTim.current) clearInterval(funcTim.current);
+                    router.push("/(auth)/(main)/all_cars");
+                } else {
+                    if (funcTim.current) clearInterval(funcTim.current);
+                    router.push("/all_before/vhod");
+                }
+            })
+            .catch(error => {
+                console.error("Ошибка fetch:", error);
+            });
+    }, [id]);
 
     return (
         <View style={styles.all}>

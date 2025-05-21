@@ -1,1 +1,2 @@
-export const SERVER_URL = 'http://gl.anohin.fvds.ru:3001'
+export const SERVER_URL = 'https://gl.anohin.fvds.ru/api';
+export const WS_PATH = 'wss://gl.anohin.fvds.ru/ws/ws';

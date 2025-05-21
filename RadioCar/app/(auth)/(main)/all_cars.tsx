@@ -13,12 +13,9 @@ import {Image} from 'expo-image';
 import * as FileSystem from 'expo-file-system';
 
 type poper = {id:string,last_seen:string,name:string,
-    description:string,image_url:string,is_on:boolean
+    description:string,image_url:string,is_on:boolean, power:number
 }
-type props={name:string, id:string, last:string, image_url:string, 
-    description:string, is_on:boolean
-}
-type props_post = {name:string,description:string,image_url:string,key:string}
+type props_post = {name:string,description:string,image_url:string,key:string,power:string}
 type props_fetch={
     id_get:number, id_post:number, id_put:number,id_delete:number
 }
@@ -33,11 +30,11 @@ export default function MainSelect(){
     const [admin_know,setadmin] = useState(get_store('admin'));
     const [jwt,setjwt] = useState(get_store('jwt'));
     const [vis2, setvis2] = useState(false);
-    const [poster, setposter] = useState<Partial<props_post>>({name:'',description:'',image_url:'',key:''})
+    const [poster, setposter] = useState<Partial<props_post>>({name:'',description:'',image_url:'',key:'',power:''})
     const [modal_add_img,setmodal_add_img] = useState(false);
     const default_img = require('@/assets/images/Image.jpg');
     const [id_del, setid_del] = useState('');
-    const [edit_put,setedit_put] = useState<Partial<props>>({id:'',name:'',description:'',image_url:''});
+    const [edit_put,setedit_put] = useState<Partial<poper>>({id:'',name:'',description:'',image_url:'',power:0});
 
     useFocusEffect(() => {
       const loadFont = async () => {
@@ -85,7 +82,8 @@ export default function MainSelect(){
                 name: poster.name,
                 description: poster.description,
                 image_url: poster.image_url,
-                key: poster.key
+                key: poster.key,
+                power: Number(poster.power)
             })
             }).then((response)=>{
                 if (response.status==200){
@@ -114,7 +112,8 @@ export default function MainSelect(){
                     id: edit_put.id,
                     name: edit_put.name,
                     description: edit_put.description,
-                    image_url: edit_put.image_url
+                    image_url: edit_put.image_url,
+                    power: Number(edit_put.power)
                 })
                 }).then((response)=>{
                     if (response.status==200){
@@ -165,13 +164,13 @@ export default function MainSelect(){
         setposter(prev=>({...prev,[key]:value}));
     };
 
-    const Cars = ({name, id, last, image_url, description, is_on}: props)=>{
+    const Cars = ({name, id, last_seen, image_url, description, is_on,power}: poper)=>{
         const [modalVis, setvis] = useState(false);
-        const [edited, setedit] = useState<Partial<props>>({id,name,image_url,description});
-        const nach = {name,last,image_url,description}
+        const [edited, setedit] = useState<Partial<poper>>({id,name,image_url,description,power});
+        const nach = {name,last_seen,image_url,description,power}
         const [modal_img, setmodal_img] = useState(false);
-        const last_up = new Date(last)
-        const edit = (key:keyof poper,value:string) =>{
+        const last_up = new Date(last_seen)
+        const edit = (key:keyof poper,value:string|number) =>{
             setedit(prev=>({...prev,[key]:value}));
         };
         const [localImageUri, setLocalImageUri] = useState<string | null>(null);
@@ -269,7 +268,7 @@ export default function MainSelect(){
                     </View>
                 </Pressable>
                 {is_on==true?
-                <Pressable onPress={()=>choose_car(name,id)}> 
+                <Pressable onPress={()=>choose_car(name,id,power)}> 
                     <View style={styles.bt_choose}>
                         <TriangleIcon/>
                     </View>
@@ -333,6 +332,16 @@ export default function MainSelect(){
                                         />
                                         </View>:
                                         <Text style={styles.text_for_module}>{description}</Text>}
+                                    {admin_know=='true'&&(
+                                        <View>
+                                            <Text style={[styles.text_for_module,{marginTop:'5%'}]}>Введите проценты:</Text>
+                                            <TextInput
+                                                style={[styles.input,styles.text_for_module,{marginTop:'5%'}]}
+                                                value={String(edited.power)}
+                                                onChangeText={v=>edit('power',v.replace(/\n+$/, ''))}
+                                            />
+                                        </View>
+                                    )}
                                     </View>
                                 </View>
                                 </View>
@@ -434,8 +443,8 @@ export default function MainSelect(){
             <View style={{paddingTop:'5%',backgroundColor:'#ffffff',flex:1}}>
                 <FlatList
                     data={Data}
-                    renderItem={({item}) => <Cars name={item.name} id={item.id} last={item.last_seen} 
-                    image_url={item.image_url} description={item.description} is_on={item.is_on} />}
+                    renderItem={({item}) => <Cars name={item.name} id={item.id} last_seen={item.last_seen} 
+                    image_url={item.image_url} description={item.description} is_on={item.is_on} power={item.power} />}
                     keyExtractor={item=>item.id}
                     onRefresh={handle}
                     refreshing={refreshing}
@@ -514,13 +523,14 @@ export default function MainSelect(){
                                     onChangeText={v=>change_post_information('description',v.replace(/\n+$/, ''))}
                                     value={poster.description}
                                 />
+                            <View style={{width:'100%',flexDirection:'row',justifyContent:'space-between'}}>
                                 <TextInput
                                     style={{
                                         borderRadius:10,
                                         backgroundColor:'#e8def8',
-                                        paddingLeft:'5%',
                                         paddingVertical:'5%',
-                                        width:width*0.7
+                                        paddingLeft:'5%',
+                                        width:width*0.3
                                     }}
                                     onKeyPress={({ nativeEvent }) => {
                                         if (nativeEvent.key === 'Enter') {
@@ -534,6 +544,20 @@ export default function MainSelect(){
                                     onChangeText={v=>change_post_information('key',v.replace(/\n+$/, ''))}
                                     value={poster.key}
                                 />
+                                <TextInput
+                                    placeholder='Мощность, %'
+                                    placeholderTextColor='#000000'
+                                    style={{
+                                        borderRadius:10,
+                                        backgroundColor:'#e8def8',
+                                        paddingVertical:'5%',
+                                        paddingLeft:'5%',
+                                        width:width*0.3
+                                    }}
+                                    value={String(poster.power)}
+                                    onChangeText={v=>change_post_information('power',v.replace(/\n+$/, ''))}
+                                />
+                                </View>
                             </View>
                             <View style={styles.view_bt}>
                                 <Pressable
@@ -764,9 +788,9 @@ const styles = StyleSheet.create({
     },
 })
 
-const choose_car = (name:string,id:string)=>{
+const choose_car = (name:string,id:string,power:number)=>{
     router.push({
         pathname:'../manage_car/manage_car',
-        params: {name:name,id:id}
+        params: {name:name,id:id,speed:power}
     })
 }

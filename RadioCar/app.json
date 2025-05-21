@@ -35,7 +35,9 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.ars44pro.RadioCar"
+      "permissions": ["INTERNET"],
+      "package": "com.ars44pro.RadioCar",
+      "usesCleartextTraffic": true
     },
     "web": {
       "bundler": "metro",
