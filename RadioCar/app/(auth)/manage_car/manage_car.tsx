@@ -1,6 +1,7 @@
 import { Dimensions, Text, Pressable, View, StyleSheet,
-  Animated, PanResponder, ActivityIndicator
+  Animated, PanResponder, ActivityIndicator,
 } from 'react-native';
+import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
@@ -12,6 +13,7 @@ import {
   RTCSessionDescription,
   MediaStream
 } from 'react-native-webrtc';
+import { runOnJS } from 'react-native-reanimated';
 import { get_store } from '@/assets/module_hooks/store';
 import { jwtDecode } from 'jwt-decode';
 import { WS_PATH } from '@/assets/module_hooks/names';
@@ -68,7 +70,7 @@ export default function Manage() {
   const pendingIceRef = useRef<RTCIceCandidate[]>([]);
   const meltingIceRef = useRef<RTCIceCandidate[]>([]);
   const jwt = useRef(get_store('jwt'));
-  
+
   // Состояния для UI
   const [activeButtons, setActiveButtons] = useState<props_bt>({
     left: false,
@@ -80,7 +82,6 @@ export default function Manage() {
   const arrowPosition = useRef(new Animated.ValueXY()).current;
   const buttonsPosition = useRef(new Animated.ValueXY()).current;
   const [editMode, setEditMode] = useState(false);
-
   // Обработчики WebRTC
   const errorHandler = useCallback((error: any) => {
     console.log('Error:', error);
@@ -98,7 +99,7 @@ export default function Manage() {
           'type': 'ice-candidate',
           'ice': event.candidate,
           'uuid': uuidRef.current,
-          'connectionId': remoteDescriptionRef.current
+          'to': remoteDescriptionRef.current
         }));
       } else {
         meltingIceRef.current.push(event.candidate);
@@ -434,38 +435,82 @@ export default function Manage() {
     }
   };
 
-  const handleButtonPress = (button: string, isPressed: boolean) => {
-    setActiveButtons(prev => {
-      const newState = {
-        ...prev,
-        [button]: isPressed
-      };
-      
-      sendCommand(newState);
-      
-      return newState;
-    });
-  };
-
-  const sendCommand = (currentState: props_bt) => {
-    console.log('Все кнопки:', currentState, 'Скорость:', speed);
+  const sendCommand = useCallback((currentState: props_bt) => {
+    console.log('Отправка команды:', 
+      'L:', currentState.left, 
+      'R:', currentState.right, 
+      'C:', currentState.circle, 
+      'X:', currentState.cross,
+      'Speed:', speed
+    );
 
     // Отправка команд через DataChannel
     if (dataChannelRef.current && dataChannelRef.current.readyState === 'open') {
-      dataChannelRef.current.send(JSON.stringify({
-        command: 'control',
-        buttons: currentState,
-        speed: speed // Добавляем значение скорости
-      }));
+      try {
+        dataChannelRef.current.send(JSON.stringify({
+          command: 'control',
+          buttons: currentState,
+          speed: speed,
+          timestamp: Date.now() // Добавляем временную метку для трассировки
+        }));
+      } catch (error) {
+        console.error('Ошибка при отправке команды:', error);
+      }
     }
-  };
+  }, [speed]);
+
+  // ЕДИНЫЙ ОБРАБОТЧИК ДЛЯ ВСЕХ КНОПОК
+  const activeButtonsRef = useRef<props_bt>({
+    left: false,
+    right: false,
+    circle: false,
+    cross: false
+  });
+
+  const handleButtonStateChange = useCallback((button: keyof props_bt, isPressed: boolean) => {
+    // Сначала обновляем ref для мгновенного доступа
+    activeButtonsRef.current = {
+      ...activeButtonsRef.current,
+      [button]: isPressed,
+    };
+    
+    // Затем обновляем состояние React для UI
+    setActiveButtons(activeButtonsRef.current);
+    
+    // Отправляем команду с актуальным состоянием
+    sendCommand(activeButtonsRef.current);
+  }, []); // Зависимость только от sendCommand
+
+  const turn_right = editMode ? Gesture.Tap().enabled(false) : Gesture.LongPress()
+    .minDuration(0)
+    .onBegin(() => runOnJS(handleButtonStateChange)('right', true))
+    .onEnd(()=>runOnJS(handleButtonStateChange)('right',false))
+    .onFinalize(()=>runOnJS(handleButtonStateChange)('right',false));
+
+  const turn_left = editMode ? Gesture.Tap().enabled(false) : Gesture.LongPress()
+    .minDuration(0)
+    .onBegin(() => runOnJS(handleButtonStateChange)('left', true))
+    .onEnd(()=>runOnJS(handleButtonStateChange)('left',false))
+    .onFinalize(()=>runOnJS(handleButtonStateChange)('left',false));
+
+  const go = editMode ? Gesture.Tap().enabled(false) : Gesture.LongPress()
+    .minDuration(0)
+    .onBegin(() => runOnJS(handleButtonStateChange)('circle', true))
+    .onEnd(()=>runOnJS(handleButtonStateChange)('circle',false))
+    .onFinalize(()=>runOnJS(handleButtonStateChange)('circle',false));
+
+  const back = editMode ? Gesture.Tap().enabled(false) : Gesture.LongPress()
+    .minDuration(0)
+    .onBegin(() => runOnJS(handleButtonStateChange)('cross', true))
+    .onEnd(()=>runOnJS(handleButtonStateChange)('cross',false))
+    .onFinalize(()=>runOnJS(handleButtonStateChange)('cross',false));
 
   const toggleEditMode = () => {
     setEditMode(prev => !prev);
   };
 
   return (
-    <View style={styles.container}>
+    <GestureHandlerRootView style={styles.container}>
       <View style={[styles.all, {zIndex:remoteStream==null?20:0}]}>
           <Text style={{
               color: '#000000',
@@ -532,7 +577,9 @@ export default function Manage() {
         )}
       </View>
       
-      <View style={styles.controlsContainer} pointerEvents="box-none">
+      <View 
+        style={styles.controlsContainer}
+      >
         <Animated.View
           {...panResponder.panHandlers}
           style={[
@@ -540,29 +587,25 @@ export default function Manage() {
             { transform: arrowPosition.getTranslateTransform() },
             editMode && styles.editModeContainer
           ]}
-          pointerEvents={editMode ? "auto" : "box-none"}
+          pointerEvents={editMode ? "auto" : "box-none"} 
         >
-          <Pressable 
+          <GestureDetector gesture={turn_left}>
+          <View
             style={[styles.controlButton, activeButtons.left && styles.activeButton]}
-            onTouchStart={() => !editMode && handleButtonPress('left', true)}
-            onTouchEnd={() => !editMode && handleButtonPress('left', false)}
-            onTouchCancel={() => !editMode && handleButtonPress('left', false)}
-            disabled={editMode}
           >
             <Ionicons name="chevron-back" size={40} color="white" />
-          </Pressable>
+          </View>
+          </GestureDetector>
           
           <View style={styles.buttonSpacer} />
-          
-          <Pressable 
+
+          <GestureDetector gesture={turn_right}>          
+          <View
             style={[styles.controlButton, activeButtons.right && styles.activeButton]}
-            onTouchStart={() => !editMode && handleButtonPress('right', true)}
-            onTouchEnd={() => !editMode && handleButtonPress('right', false)}
-            onTouchCancel={() => !editMode && handleButtonPress('right', false)}
-            disabled={editMode}
           >
             <Ionicons name="chevron-forward" size={40} color="white" />
-          </Pressable>
+          </View>
+          </GestureDetector>
         </Animated.View>
         
         <Animated.View
@@ -574,30 +617,27 @@ export default function Manage() {
           ]}
           pointerEvents={editMode ? "auto" : "box-none"}
         >
-          <Pressable 
+          <GestureDetector gesture={go}>
+          <View
             style={[styles.controlButton, styles.circleButton, activeButtons.circle && styles.activeButton]}
-            onTouchStart={() => !editMode && handleButtonPress('circle', true)}
-            onTouchEnd={() => !editMode && handleButtonPress('circle', false)}
-            onTouchCancel={() => !editMode && handleButtonPress('circle', false)}
-            disabled={editMode}
           >
             <Ionicons name="ellipse-outline" size={36} color="white" />
-          </Pressable>
+          </View>
+          </GestureDetector>
           
           <View style={styles.buttonVerticalSpacer} />
           
-          <Pressable 
+          <GestureDetector gesture={back}>
+          <View 
             style={[styles.controlButton, styles.crossButton, activeButtons.cross && styles.activeButton]}
-            onTouchStart={() => !editMode && handleButtonPress('cross', true)}
-            onTouchEnd={() => !editMode && handleButtonPress('cross', false)}
-            onTouchCancel={() => !editMode && handleButtonPress('cross', false)}
-            disabled={editMode}
           >
             <Ionicons name="close" size={40} color="white" />
-          </Pressable>
+          </View>
+          </GestureDetector>
+
         </Animated.View>
       </View>
-    </View>
+    </GestureHandlerRootView>
   );
 }
 
